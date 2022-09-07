@@ -558,7 +558,7 @@ def main(args):
             divider = make_axes_locatable(axs[1])
             cax = divider.append_axes("right", size="5%", pad=0.05)
             plt.colorbar(fig_tadjusted_im, cax=cax)
-            # plt.tight_layout()
+            plt.tight_layout()
             fig.savefig(os.path.join(folder_for_outputs, f"{ix:04}.png"), dpi=200)
 
 
