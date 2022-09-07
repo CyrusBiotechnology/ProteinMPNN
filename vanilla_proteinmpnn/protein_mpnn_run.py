@@ -526,24 +526,39 @@ def main(args):
             all_probs_concat = np.concatenate(all_probs_list)
             all_log_probs_concat = np.concatenate(all_log_probs_list)
             fig, axs = plt.subplots(2)
-            aa_probability_im = axs[0].imshow(np.exp(all_log_probs_concat).mean(0).T)
+            print(np.exp(all_log_probs_concat).mean(0).T.shape)
+            print(np.exp(all_log_probs_concat).mean(0).T[:, 80:100].sum(axis=0))
+            ntadj = np.exp(all_log_probs_concat).mean(0).T[:, 80:100]
+            print("NT")
+            for ipos in range(20):
+                print(f"{ipos+80=} " + " ".join([f"{alphabet[x]}: {ntadj[x, ipos]:.3f}" for x in range(len(alphabet))]))
+            aa_probability_im = axs[0].imshow(np.exp(all_log_probs_concat).mean(0).T[:, 80:100], aspect="auto", interpolation="None")
             axs[0].set_xlabel("Position")
             axs[0].set_ylabel("AA")
+            axs[0].set_ylabel("AA")
             axs[0].set_title("Predicted Probability at Every Position")
-            axs[0].colorbar()
+            axs[0].set_yticks(list(range(len(alphabet))))
+            axs[0].set_yticklabels(list(alphabet))
             divider = make_axes_locatable(axs[0])
             cax = divider.append_axes("right", size="5%", pad=0.05)
             plt.colorbar(aa_probability_im, cax=cax)
 
-            fig_tadjusted_im = axs[1].imshow(all_probs_concat.mean(0).T)
+            fig_tadjusted_im = axs[1].imshow(all_probs_concat.mean(0).T[:, 80:100], aspect="auto", interpolation="None")
+            print(all_probs_concat.mean(0).T[:, 80:100].sum(axis=0))
+            print("T")
+            tadj = all_probs_concat.mean(0).T[:, 80:100]
+            for ipos in range(20):
+                print(f"{ipos+80=}" + " ".join([f"{alphabet[x]}: {tadj[x, ipos]:.3f}" for x in range(len(alphabet))]))
+
             axs[1].set_xlabel("Position")
             axs[1].set_ylabel("AA")
             axs[1].set_title("Predicted Probability at Every Position (Temperature Adjusted)")
-            plt.colorbar(aa_probability_im, cax=cax)
+            axs[1].set_yticks(list(range(len(alphabet))))
+            axs[1].set_yticklabels(list(alphabet))
             divider = make_axes_locatable(axs[1])
             cax = divider.append_axes("right", size="5%", pad=0.05)
             plt.colorbar(fig_tadjusted_im, cax=cax)
-            plt.tight_layout()
+            # plt.tight_layout()
             fig.savefig(os.path.join(folder_for_outputs, f"{ix:04}.png"), dpi=200)
 
 
