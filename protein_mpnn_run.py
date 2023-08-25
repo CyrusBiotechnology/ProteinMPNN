@@ -1,6 +1,7 @@
 import argparse
 import os.path
 
+
 def main(args):
 
     import json, time, os, sys, glob
@@ -20,6 +21,7 @@ def main(args):
     
     from protein_mpnn_utils import loss_nll, loss_smoothed, gather_edges, gather_nodes, gather_nodes_t, cat_neighbors_nodes, _scores, _S_to_seq, tied_featurize, parse_PDB, parse_fasta
     from protein_mpnn_utils import StructureDataset, StructureDatasetPDB, ProteinMPNN
+    from cloud_storage import download_checkpoint_from_google
 
     if args.seed:
         seed=args.seed
@@ -31,8 +33,7 @@ def main(args):
     np.random.seed(seed)   
     
     hidden_dim = 128
-    num_layers = 3 
-  
+    num_layers = 3
 
     if args.path_to_model_weights:
         model_folder_path = args.path_to_model_weights
@@ -54,7 +55,16 @@ def main(args):
             else:
                 model_folder_path = file_path[:k] + '/vanilla_model_weights/'
 
-    checkpoint_path = model_folder_path + f'{args.model_name}.pt'
+    if args.model_name.endswith(".pt"):
+        model_filename = args.model_name
+    else:
+        model_filename = f'{args.model_name}.pt'
+
+    checkpoint_path = model_folder_path + model_filename
+    delete_temp_checkpoint = False
+    if checkpoint_path.startswith("gs://"):
+        checkpoint_path = download_checkpoint_from_google(checkpoint_path)
+        delete_temp_checkpoint = True
     folder_for_outputs = args.out_folder
     
     NUM_BATCHES = args.num_seq_per_target//args.batch_size
@@ -414,7 +424,11 @@ def main(args):
                 total_length = X.shape[1]
                 if print_all:
                     print(f'{num_seqs} sequences of length {total_length} generated in {dt} seconds')
-   
+                if delete_temp_checkpoint:
+                    print("deleting temporarily downloaded checkpoint file")
+                    os.unlink(checkpoint_path)
+
+
 if __name__ == "__main__":
     argparser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
@@ -422,7 +436,7 @@ if __name__ == "__main__":
 
   
     argparser.add_argument("--ca_only", action="store_true", default=False, help="Parse CA-only structures and use CA-only models (default: false)")   
-    argparser.add_argument("--path_to_model_weights", type=str, default="", help="Path to model weights folder;") 
+    argparser.add_argument("--path_to_model_weights", type=str, default="", help="Path to model weights folder.  A model weights folder in google cloud storage can be specified by providing a url starting with gs://")
     argparser.add_argument("--model_name", type=str, default="v_48_020", help="ProteinMPNN model name: v_48_002, v_48_010, v_48_020, v_48_030; v_48_010=version with 48 edges 0.10A noise")
     argparser.add_argument("--use_soluble_model", action="store_true", default=False, help="Flag to load ProteinMPNN weights trained on soluble proteins only.")
 
