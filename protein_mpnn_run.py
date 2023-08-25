@@ -436,7 +436,7 @@ if __name__ == "__main__":
 
   
     argparser.add_argument("--ca_only", action="store_true", default=False, help="Parse CA-only structures and use CA-only models (default: false)")   
-    argparser.add_argument("--path_to_model_weights", type=str, default="", help="Path to model weights folder;") 
+    argparser.add_argument("--path_to_model_weights", type=str, default="", help="Path to model weights folder.  A model weights folder in google cloud storage can be specified by providing a url starting with gs://")
     argparser.add_argument("--model_name", type=str, default="v_48_020", help="ProteinMPNN model name: v_48_002, v_48_010, v_48_020, v_48_030; v_48_010=version with 48 edges 0.10A noise")
     argparser.add_argument("--use_soluble_model", action="store_true", default=False, help="Flag to load ProteinMPNN weights trained on soluble proteins only.")
 
